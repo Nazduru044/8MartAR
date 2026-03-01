@@ -1,1 +1,102 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8 Mart Dünya Kadınlar Günü AR</title>
+    
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    
+    <style>
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
 
+        /* Başlangıç Ekranı - Zarif Kadınlar Günü Teması */
+        #start-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #4a148c 0%, #880e4f 100%);
+            color: white;
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; z-index: 10000; text-align: center;
+        }
+
+        #start-button {
+            background: #ffffff; color: #880e4f; border: none;
+            padding: 16px 45px; font-size: 1.2rem; border-radius: 50px;
+            cursor: pointer; font-weight: bold; transition: 0.3s;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
+        }
+
+        #start-button:hover { transform: scale(1.05); background: #fce4ec; }
+
+        /* Tarama Uyarısı */
+        #scan-banner {
+            position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+            background: rgba(74, 20, 140, 0.85); color: white; padding: 12px 30px;
+            border-radius: 30px; font-size: 14px; z-index: 9999; display: none;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <h1 style="margin-bottom: 10px; font-size: 2rem;">Dünya Kadınlar Günü</h1>
+        <p style="opacity: 0.9; max-width: 80%;">Deneyimi başlatmak için butona dokunun.</p>
+        <button id="start-button">BAŞLAT</button>
+    </div>
+
+    <div id="scan-banner">Resmi kameraya doğru tutun...</div>
+
+    <a-scene mindar-image="imageTargetSrc: ./mart8/mart8k.mind;" 
+             color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" 
+             vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+      
+      <a-assets>
+        <video id="gunuVideo" src="./mart8/mart8.mp4" 
+               preload="auto" loop="true" crossorigin="anonymous" 
+               playsinline webkit-playsinline></video>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
+          <a-video src="#gunuVideo" width="1" height="0.988" position="0 0 0"></a-video>
+      </a-entity>
+      
+    </a-scene>
+
+    <script>
+        const video = document.querySelector('#gunuVideo');
+        const target = document.querySelector('#ar-target');
+        const startScreen = document.querySelector('#start-screen');
+        const startBtn = document.querySelector('#start-button');
+        const scanBanner = document.querySelector('#scan-banner');
+
+        // Deneyimi Başlat
+        startBtn.addEventListener('click', () => {
+            // Tarayıcı kısıtlamalarını aşmak için videoyu tetikleme
+            video.play().then(() => {
+                video.pause();
+                video.currentTime = 0;
+            }).catch(e => console.error("Video başlatma hatası:", e));
+
+            startScreen.style.display = 'none';
+            scanBanner.style.display = 'block';
+        });
+
+        // Hedef Bulundu
+        target.addEventListener('targetFound', () => {
+            scanBanner.style.display = 'none';
+            video.play();
+        });
+
+        // Hedef Kayboldu
+        target.addEventListener('targetLost', () => {
+            video.pause();
+            scanBanner.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
